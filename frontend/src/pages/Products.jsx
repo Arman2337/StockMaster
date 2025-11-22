@@ -36,6 +36,7 @@ const Products = () => {
         name: '',
         sku: '',
         category: '',
+        customCategory: '',
         uom: 'pcs',
         initialStock: '',
         locationId: '',
@@ -65,12 +66,27 @@ const Products = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await api.post('/products', newProduct);
+            // Validate custom category if "Other" is selected
+            if (newProduct.category === 'Other' && !newProduct.customCategory.trim()) {
+                alert('Please enter a custom category name');
+                setIsSubmitting(false);
+                return;
+            }
+            
+            // Use customCategory if "Other" is selected, otherwise use the selected category
+            const productData = {
+                ...newProduct,
+                category: newProduct.category === 'Other' ? newProduct.customCategory.trim() : newProduct.category
+            };
+            // Remove customCategory from the payload as it's not needed in the backend
+            delete productData.customCategory;
+            await api.post('/products', productData);
             setIsModalOpen(false);
             setNewProduct({
                 name: '',
                 sku: '',
                 category: '',
+                customCategory: '',
                 uom: 'pcs',
                 initialStock: '',
                 locationId: '',
@@ -86,6 +102,23 @@ const Products = () => {
     };
 
     const categories = ['all', ...new Set(products.map(p => p.category).filter(Boolean))];
+    
+    // Predefined product categories
+    const productCategories = [
+        'Electronics',
+        'Raw Materials',
+        'Furniture',
+        'Textiles',
+        'Food & Beverages',
+        'Tools & Equipment',
+        'Office Supplies',
+        'Automotive',
+        'Medical Supplies',
+        'Clothing & Apparel',
+        'Home & Garden',
+        'Sports & Recreation',
+        'Other'
+    ];
     
     const filteredProducts = products.filter(p => {
         const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -498,13 +531,36 @@ const Products = () => {
                                             <Tag className="w-4 h-4 text-indigo-400" />
                                             Category
                                         </label>
-                                        <input
-                                            type="text"
+                                        <select
                                             value={newProduct.category}
-                                            onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all"
-                                            placeholder="e.g. Electronics"
-                                        />
+                                            onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value, customCategory: e.target.value === 'Other' ? newProduct.customCategory : '' })}
+                                            className="w-full pl-4 pr-10 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzk0YTNiZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+')] bg-no-repeat bg-[right_0.75rem_center] bg-[length:12px_8px]"
+                                        >
+                                            <option value="" className="bg-slate-800">Select Category</option>
+                                            {productCategories.map((cat) => (
+                                                <option key={cat} value={cat} className="bg-slate-800">
+                                                    {cat}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {/* Show custom category input when "Other" is selected */}
+                                        {newProduct.category === 'Other' && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.2 }}
+                                                className="mt-2"
+                                            >
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={newProduct.customCategory}
+                                                    onChange={(e) => setNewProduct({ ...newProduct, customCategory: e.target.value })}
+                                                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-indigo-500/50 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all"
+                                                    placeholder="Enter custom category name"
+                                                />
+                                            </motion.div>
+                                        )}
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-slate-300 flex items-center gap-2">
@@ -514,7 +570,7 @@ const Products = () => {
                                         <select
                                             value={newProduct.uom}
                                             onChange={(e) => setNewProduct({ ...newProduct, uom: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzk0YTNiZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+')] bg-no-repeat bg-right-4"
+                                            className="w-full pl-4 pr-10 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzk0YTNiZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+')] bg-no-repeat bg-[right_0.75rem_center] bg-[length:12px_8px]"
                                         >
                                             <option value="pcs" className="bg-slate-800">Pieces (pcs)</option>
                                             <option value="kg" className="bg-slate-800">Kilograms (kg)</option>
@@ -567,7 +623,7 @@ const Products = () => {
                                             <select
                                                 value={newProduct.locationId}
                                                 onChange={(e) => setNewProduct({ ...newProduct, locationId: e.target.value })}
-                                                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzk0YTNiZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+')] bg-no-repeat bg-right-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="w-full pl-4 pr-10 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzk0YTNiZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+')] bg-no-repeat bg-[right_0.75rem_center] bg-[length:12px_8px] disabled:opacity-50 disabled:cursor-not-allowed"
                                                 disabled={!newProduct.initialStock}
                                                 required={!!newProduct.initialStock}
                                             >
