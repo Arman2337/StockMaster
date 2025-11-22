@@ -1,0 +1,94 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+.pnpm-store/
+
+# dotenv / env files (secrets)
+.env
+.env.local
+.env.*.local
+.env.test
+.env.production
+.env.*.secret
+
+# Logs
+logs
+*.log
+logs/*.log
+npm-debug.log*
+yarn-debug.log*
+debug.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Build / output
+dist/
+build/
+out/
+public/build/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Mac / Windows
+.DS_Store
+ehthumbs.db
+Icon?
+Desktop.ini
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Temp files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Uploads and user data
+uploads/
+storage/
+media/
+
+# Database files & dumps (local development)
+*.sqlite
+*.sqlite3
+*.db
+*.sql
+dump.sql
+dump-*.sql
+
+# Secrets and misc
+*.pem
+*.key
+*.crt
+
+# Container / Docker
+docker-compose.override.yml
+.docker/
+
+# Testing
+jest.config.js
+test-results/
+
+# Misc
+*.tgz
+*.7z
+*.zip
